@@ -38,6 +38,13 @@ legacy_tox_ini = """
     [tox]
     envlist = django{3.2,4.2}-{py38,py39,py310,py311}
 
+    [gh-actions]
+    python =
+        3.8: py38
+        3.9: py39
+        3.10: py310
+        3.11: py311
+
     [testenv]
     deps =
         django3.2: Django>=3.2
