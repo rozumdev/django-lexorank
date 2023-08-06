@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "django-lexorank"
 version = "0.1.0"
-description = "A reference implementation of a list ordering system like JIRA's Lexorank algorithm for Django."
+description = "This package implements an algorithm similar to JIRA's lexorank, but without using buckets for rebalancing that can be used with Django projects."
 authors = ["Alex Rozum <rozumalex@gmail.com>"]
 packages = [
     {include="django_lexorank"}

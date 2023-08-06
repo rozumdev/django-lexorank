@@ -1,16 +1,15 @@
 # django-lexorank
 
----
 
 [![PyPI version](https://img.shields.io/pypi/v/django-lexorank.svg)](https://pypi.python.org/pypi/django-lexorank/)
 
 
-This project implements an algorithm similar to JIRA's lexorank, but without using buckets for rebalancing.
+This package implements an algorithm similar to JIRA's lexorank, but without using buckets for rebalancing
+that can be used with Django projects.
 
 
 ## Installation
 
----
 
 ```shell
 pip install django-lexorank
@@ -19,14 +18,12 @@ pip install django-lexorank
 
 ## Configuration
 
----
 
 Add `django_lexorank` to `INSTALLED_APPS` in your Django settings:
 
 
 ## Usage
 
----
 
 ### Defining models
 
@@ -34,11 +31,11 @@ To add ranking to your model, you need to inherit it from `RankedModel`.
 
 There are 2 ways of using `RankedModel`:
 
-**Globally**
+#### Globally
 
 This way, all the objects will be ranked together in the global scope.
 
-#### Example:
+**Example:**
 
 ```python
 from django_lexorank.models import RankedModel
@@ -49,14 +46,14 @@ class Contributor(RankedModel):
     user = models.ForeignKey("auth.User", on_delete=models.CASCADE)
 ```
 
-**Per group**
+#### Per group
 
 This way, instances of the model will be ranked separately per group.
 
 To do that, you have to set a name of the foreign key to the group
 to the `order_with_respect_to` parameter of the model.
 
-#### Example:
+**Example:**
 
 ```python
 from django_lexorank.models import RankedModel
@@ -74,7 +71,7 @@ class Repository(RankedModel):
 By default, new instances of the model will be ranked at the top of the list.
 Rank field may accept boolean parameter `insert_to_bottom` to override this behaviour.
 
-#### Example:
+**Example:**
 
 ```python
 from django_lexorank.models import RankedModel
@@ -134,5 +131,3 @@ or for a group if `order_with_respect_to` is set
 `model.get_first_object_rank()` - return first object rank in the list
 
 `model.get_last_object_rank()` - return last object rank in the list
-
-``
