@@ -1,6 +1,6 @@
 # django-lexorank
 
-
+[![Test workflow](https://github.com/rozumdev/django-lexorank/actions/workflows/tests.yml/badge.svg)](https://github.com/rozumdev/django-lexorank/actions/workflows/test.yml/)
 [![PyPI version](https://img.shields.io/pypi/v/django-lexorank.svg)](https://pypi.python.org/pypi/django-lexorank/)
 
 
