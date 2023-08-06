@@ -6,6 +6,14 @@ authors = ["Alex Rozum <rozumalex@gmail.com>"]
 packages = [
     {include="django_lexorank"}
 ]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Environment :: Web Environment",
+    "Framework :: Django",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
 license = "MIT"
 readme = "README.md"
 
