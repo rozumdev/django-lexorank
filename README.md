@@ -42,8 +42,8 @@ from django_lexorank.models import RankedModel
 from django.db import models
 
 
-class Contributor(RankedModel):
-    user = models.ForeignKey("auth.User", on_delete=models.CASCADE)
+class Board(RankedModel):
+    name = models.CharField(max_length=255)
 ```
 
 #### Per group
@@ -60,10 +60,10 @@ from django_lexorank.models import RankedModel
 from django.db import models
 
 
-class Repository(RankedModel):
+class Task(RankedModel):
     name = models.CharField(max_length=255)
-    user = models.ForeignKey("auth.User", on_delete=models.CASCADE)
-    order_with_respect_to = "user"
+    board = models.ForeignKey("Board", on_delete=models.CASCADE, related_name="tasks")
+    order_with_respect_to = "board"
 ```
 
 ### Field parameters
@@ -79,8 +79,8 @@ from django_lexorank.fields import RankField
 from django.db import models
 
 
-class Contributor(RankedModel):
-    user = models.ForeignKey("auth.User", on_delete=models.CASCADE)
+class User(RankedModel):
+    name = models.CharField(max_length=255)
     rank = RankField(insert_to_bottom=True)
 ```
 
@@ -102,9 +102,9 @@ There are 3 ways to insert models using manager methods:
 
 `obj.place_before(before_obj)` - places model instance before provided instance
 
-`obj.move_to_top()` - moves model instance to the bottom of the list
+`obj.place_on_top()` - moves model instance to the bottom of the list
 
-`obj.move_to_bottom()` - moves model instance to the bottom of the list
+`obj.place_on_bottom()` - moves model instance to the bottom of the list
 
 `obj.get_previous_object()` - return previous object in the list
 
@@ -116,10 +116,7 @@ There are 3 ways to insert models using manager methods:
 
 `obj.rebalance()` - rebalance the whole list or a group if `order_with_respect_to` is set
 
-
-### Instance properties
-
-`obj.rebalancing_required` - returns `True` if rebalancing is required for the whole list,
+`obj.rebalancing_required()` - returns `True` if rebalancing is required for the whole list,
 or for a group if `order_with_respect_to` is set
 
 ### Model methods

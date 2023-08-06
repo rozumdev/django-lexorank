@@ -30,9 +30,8 @@ max-complexity = 15
 max-line-length = 88
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "conf.settings"
-pythonpath = ["app/"]
-addopts = "--reuse-db"
+DJANGO_SETTINGS_MODULE = "tests.settings"
+testpaths = "tests"
 
 [tool.tox]
 legacy_tox_ini = """
@@ -48,7 +47,9 @@ legacy_tox_ini = """
         factory-boy
         django-extensions
     commands =
-        pytest sample_project
+        pytest
+    setenv =
+        PYTHONPATH=.
 """
 
 [build-system]

@@ -30,7 +30,7 @@ class RankedModelManager(models.Manager.from_queryset(RankedModelQuerySet)):  # 
             objects_count=objects_count,
         )
 
-        self.create(rank=rank, **kwargs)
+        return self.create(rank=rank, **kwargs)
 
     def add_to_bottom(self, **kwargs):
         """Adds a new object to the bottom of the list."""
@@ -54,4 +54,4 @@ class RankedModelManager(models.Manager.from_queryset(RankedModelQuerySet)):  # 
             objects_count=objects_count,
         )
 
-        self.create(rank=rank, **kwargs)
+        return self.create(rank=rank, **kwargs)
