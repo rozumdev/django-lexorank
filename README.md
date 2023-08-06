@@ -16,12 +16,6 @@ pip install django-lexorank
 ```
 
 
-## Configuration
-
-
-Add `django_lexorank` to `INSTALLED_APPS` in your Django settings:
-
-
 ## Usage
 
 
