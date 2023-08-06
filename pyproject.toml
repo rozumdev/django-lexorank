@@ -23,7 +23,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-django = "^3.2"
+django = ">=3.2, <5"
 
 [tool.poetry.group.dev.dependencies]
 pytest-django = "^4.5.2"
