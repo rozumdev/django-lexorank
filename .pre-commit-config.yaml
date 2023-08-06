@@ -1,0 +1,29 @@
+repos:
+  - repo: https://github.com/timothycrosley/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+
+  - repo: https://github.com/ambv/black
+    rev: 23.7.0
+    hooks:
+      - id: black
+        language_version: python3.11
+
+  - repo: https://github.com/john-hen/Flake8-pyproject
+    rev: 1.2.3
+    hooks:
+      - id: Flake8-pyproject
+        language_version: python3.11
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.4.1
+    hooks:
+    - id: mypy
+      additional_dependencies: ['types-requests']
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-yaml # Attempts to load all yaml files to verify syntax
+      - id: end-of-file-fixer # Makes sure files end in a newline and only a newline
