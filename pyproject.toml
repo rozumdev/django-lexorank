@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-lexorank"
-version = "0.1.1"
+version = "0.1.2"
 description = "This package implements an algorithm similar to JIRA's lexorank, but without using buckets for rebalancing that can be used with Django projects."
 authors = ["Alex Rozum <rozumalex@gmail.com>"]
 packages = [
