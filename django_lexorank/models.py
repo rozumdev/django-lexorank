@@ -8,12 +8,15 @@ from django.db.models.functions import Length
 
 from .fields import RankField
 from .lexorank import LexoRank
+from .managers import RankedModelManager
 
 CharField.register_lookup(Length, "length")
 
 
 class RankedModel(models.Model):
-    rank = RankField(editable=False)
+    objects = RankedModelManager()
+
+    rank = RankField()
     order_with_respect_to = None
 
     class Meta:
@@ -24,14 +27,6 @@ class RankedModel(models.Model):
     def model(self):
         return self._meta.model
 
-    @cached_property
-    def default_rank_length(self):
-        return self.model.rank.field.default_rank_length
-
-    @property
-    def objects_count(self):
-        return self.model.objects.filter(**self.with_respect_to_kwargs).count()
-
     @property
     def with_respect_to_kwargs(self):
         if not self.order_with_respect_to:
@@ -39,14 +34,18 @@ class RankedModel(models.Model):
 
         return {self.order_with_respect_to: getattr(self, self.order_with_respect_to)}
 
+    @property
+    def objects_count(self):
+        return self.model.objects.filter(**self.with_respect_to_kwargs).count()
+
     def move_after(self, after_obj: "RankedModel") -> "RankedModel":
+        """Place object after selected one."""
         previous_rank = after_obj.rank
         next_rank = after_obj.get_next_object_rank()
 
         middle_rank = LexoRank.get_lexorank_in_between(
             previous_rank=previous_rank,
             next_rank=next_rank,
-            default_rank_length=self.default_rank_length,
             objects_count=self.objects_count,
         )
 
@@ -56,13 +55,13 @@ class RankedModel(models.Model):
         return self
 
     def move_before(self, before_obj: "RankedModel") -> "RankedModel":
+        """Place object before selected one."""
         next_rank = before_obj.rank
         previous_rank = before_obj.get_previous_object_rank()
 
         middle_rank = LexoRank.get_lexorank_in_between(
             previous_rank=previous_rank,
             next_rank=next_rank,
-            default_rank_length=self.default_rank_length,
             objects_count=self.objects_count,
         )
 
@@ -73,7 +72,7 @@ class RankedModel(models.Model):
 
     @classmethod
     def get_first_object(cls, with_respect_to_kwargs: dict) -> Optional["RankedModel"]:
-        """Return the first object."""
+        """Return the first object if exists.."""
         return cls.objects.filter(**with_respect_to_kwargs).order_by("rank").first()
 
     @classmethod
@@ -124,7 +123,7 @@ class RankedModel(models.Model):
 
     @classmethod
     def get_last_object(cls, with_respect_to_kwargs: dict) -> Optional["RankedModel"]:
-        """Return the last object."""
+        """Return the last object if exists."""
         return cls.objects.filter(**with_respect_to_kwargs).order_by("-rank").first()
 
     @classmethod
@@ -139,7 +138,7 @@ class RankedModel(models.Model):
         Return `True` if any object has rank length greater than 128, `False` otherwise.
         """
         return self.model.objects.filter(
-            rank__length__gte=128, **self.with_respect_to_kwargs
+            rank__length__gte=LexoRank.rebalancing_length, **self.with_respect_to_kwargs
         ).exists()
 
     @transaction.atomic
@@ -155,13 +154,11 @@ class RankedModel(models.Model):
 
         rank = LexoRank.get_min_rank(
             objects_count=self.objects_count,
-            default_rank_length=self.default_rank_length,
         )
         for obj in qs:
             rank = LexoRank.increment_rank(
                 rank=rank,
                 objects_count=self.objects_count,
-                default_rank_length=self.default_rank_length,
             )
             obj.rank = rank
             objects_to_update.append(obj)
