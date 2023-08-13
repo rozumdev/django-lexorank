@@ -33,9 +33,18 @@ pre-commit = "^3.3.3"
 bpython = "^0.24"
 tox = "^4.6.4"
 
+[tool.isort]
+profile = "black"
+
 [tool.flake8]
 max-complexity = 15
 max-line-length = 88
+per-file-ignores = [
+    "__init__.py: F401",
+]
+
+[tool.mypy]
+allow_untyped_globals = true
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "tests.settings"

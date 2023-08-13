@@ -1,6 +1,7 @@
 SECRET_KEY = "tests"
 
 INSTALLED_APPS = [
+    "django_lexorank",
     "tests",
 ]
 

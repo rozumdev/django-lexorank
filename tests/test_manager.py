@@ -97,3 +97,36 @@ def test_creating_a_ranked_model_with_another_respect_field_place_it_to_a_separa
 
     # then
     assert tasks_on_board[0].rank == task.rank
+
+
+def test_rebalancing_is_scheduled_if_new_objects_rank_exceeds_the_max_length_when_added_to_top(  # noqa: E501
+    board_factory,
+):
+    # when
+    with mock.patch.object(LexoRank, "rebalancing_length", 1):
+        board = Board.objects.add_to_top(name="Board")
+
+    # then
+    assert board.rebalancing_scheduled()
+
+
+def test_rebalancing_is_scheduled_if_new_objects_rank_exceeds_the_max_length_when_added_to_bottom(  # noqa: E501
+    board_factory,
+):
+    # when
+    with mock.patch.object(LexoRank, "rebalancing_length", 1):
+        board = Board.objects.add_to_bottom(name="Board")
+
+    # then
+    assert board.rebalancing_scheduled()
+
+
+def test_rebalancing_is_scheduled_if_new_objects_rank_exceeds_the_max_length_when_added_using_create_method(  # noqa: E501
+    board_factory,
+):
+    # when
+    with mock.patch.object(LexoRank, "rebalancing_length", 1):
+        board = Board.objects.create(name="Board")
+
+    # then
+    assert board.rebalancing_scheduled()

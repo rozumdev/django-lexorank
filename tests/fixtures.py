@@ -1,6 +1,12 @@
 import pytest
 
-from .factories import BoardFactory, TaskFactory, TeamFactory, UserFactory
+from .factories import (
+    BoardFactory,
+    ScheduledRebalancingFactory,
+    TaskFactory,
+    TeamFactory,
+    UserFactory,
+)
 
 
 @pytest.fixture
@@ -41,3 +47,8 @@ def task_factory():
 @pytest.fixture
 def task(task_factory):
     return task_factory()
+
+
+@pytest.fixture
+def scheduled_rebalancing_factory():
+    return ScheduledRebalancingFactory
