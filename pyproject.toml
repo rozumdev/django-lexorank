@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-lexorank"
-version = "0.1.2"
+version = "0.1.3"
 description = "This package implements an algorithm similar to JIRA's lexorank, but without using buckets for rebalancing that can be used with Django projects."
 authors = ["Alex Rozum <rozumalex@gmail.com>"]
 packages = [
@@ -33,9 +33,18 @@ pre-commit = "^3.3.3"
 bpython = "^0.24"
 tox = "^4.6.4"
 
+[tool.isort]
+profile = "black"
+
 [tool.flake8]
 max-complexity = 15
 max-line-length = 88
+per-file-ignores = [
+    "__init__.py: F401",
+]
+
+[tool.mypy]
+allow_untyped_globals = true
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "tests.settings"

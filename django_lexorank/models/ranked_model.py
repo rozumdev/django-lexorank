@@ -1,5 +1,5 @@
 from functools import cached_property
-from typing import Optional
+from typing import Optional, Type
 
 from django.contrib import admin
 from django.db import models, transaction
@@ -7,9 +7,10 @@ from django.db.models import CharField
 from django.db.models.functions import Length
 from django.forms.models import model_to_dict
 
-from .fields import RankField
-from .lexorank import LexoRank
-from .managers import RankedModelManager
+from ..fields import RankField
+from ..lexorank import LexoRank
+from ..managers import RankedModelManager
+from .scheduled_rebalancing import ScheduledRebalancing
 
 CharField.register_lookup(Length, "length")
 
@@ -45,27 +46,43 @@ class RankedModel(models.Model):
 
         return False
 
-    def save(self, *args, **kwargs):
+    @transaction.atomic
+    def save(self, *args, **kwargs) -> None:
         if self.order_with_respect_to:
             if self.field_value_has_changed(self.order_with_respect_to):
-                self.rank = None
+                self.rank = None  # type: ignore[assignment]
 
-        return super().save(*args, **kwargs)
+        super().save(*args, **kwargs)
+
+        if self.rebalancing_required():
+            self.schedule_rebalancing()
 
     @cached_property
-    def _model(self):
+    def _model(self) -> Type[models.Model]:
         return self._meta.model
 
     @property
-    def _with_respect_to_kwargs(self):
+    def _with_respect_to_kwargs(self) -> dict:
         if not self.order_with_respect_to:
             return {}
 
         return {self.order_with_respect_to: getattr(self, self.order_with_respect_to)}
 
     @property
+    def _with_respect_to_value(self) -> str:
+        if self.order_with_respect_to:
+            return getattr(self, self.order_with_respect_to).pk
+
+        return ""
+
+    @property
     def _objects_count(self):
         return self._model.objects.filter(**self._with_respect_to_kwargs).count()
+
+    def _move_to(self, rank: str) -> "RankedModel":
+        self.rank = rank  # type: ignore[assignment]
+        self.save(update_fields=["rank"])
+        return self
 
     def place_on_top(self) -> "RankedModel":
         """Place object at the top of the list."""
@@ -73,15 +90,13 @@ class RankedModel(models.Model):
             with_respect_to_kwargs=self._with_respect_to_kwargs
         )
 
-        self.rank = LexoRank.get_lexorank_in_between(  # type: ignore[assignment]
+        rank = LexoRank.get_lexorank_in_between(  # type: ignore[assignment]
             previous_rank=None,
             next_rank=first_object_rank,
             objects_count=self._objects_count,
         )
 
-        self.save(update_fields=["rank"])
-
-        return self
+        return self._move_to(rank)
 
     def place_on_bottom(self) -> "RankedModel":
         """Place object at the bottom of the list."""
@@ -89,47 +104,39 @@ class RankedModel(models.Model):
             with_respect_to_kwargs=self._with_respect_to_kwargs
         )
 
-        self.rank = LexoRank.get_lexorank_in_between(  # type: ignore[assignment]
+        rank = LexoRank.get_lexorank_in_between(  # type: ignore[assignment]
             previous_rank=last_object_rank,
             next_rank=None,
             objects_count=self._objects_count,
         )
 
-        self.save(update_fields=["rank"])
-
-        return self
+        return self._move_to(rank)
 
     def place_after(self, after_obj: "RankedModel") -> "RankedModel":
         """Place object after selected one."""
         previous_rank = after_obj.rank
         next_rank = after_obj.get_next_object_rank()
 
-        middle_rank = LexoRank.get_lexorank_in_between(
+        rank = LexoRank.get_lexorank_in_between(
             previous_rank=previous_rank,
             next_rank=next_rank,
             objects_count=self._objects_count,
         )
 
-        self.rank = middle_rank  # type: ignore[assignment]
-        self.save(update_fields=["rank"])
-
-        return self
+        return self._move_to(rank)
 
     def place_before(self, before_obj: "RankedModel") -> "RankedModel":
         """Place object before selected one."""
         next_rank = before_obj.rank
         previous_rank = before_obj.get_previous_object_rank()
 
-        middle_rank = LexoRank.get_lexorank_in_between(
+        rank = LexoRank.get_lexorank_in_between(
             previous_rank=previous_rank,
             next_rank=next_rank,
             objects_count=self._objects_count,
         )
 
-        self.rank = middle_rank  # type: ignore[assignment]
-        self.save(update_fields=["rank"])
-
-        return self
+        return self._move_to(rank)
 
     def get_previous_object(self) -> Optional["RankedModel"]:
         """
@@ -211,6 +218,17 @@ class RankedModel(models.Model):
             **self._with_respect_to_kwargs
         ).exists()
 
+    @admin.display(boolean=True)
+    def rebalancing_scheduled(self) -> bool:
+        """
+        Return `True` if rebalancing was scheduled for a list that includes that object,
+        `False` otherwise.
+        """
+        return ScheduledRebalancing.objects.filter(
+            model=self._meta.model_name,
+            with_respect_to=self._with_respect_to_value,
+        ).exists()
+
     @classmethod
     def get_first_object(cls, with_respect_to_kwargs: dict) -> Optional["RankedModel"]:
         """Return the first object if exists.."""
@@ -246,3 +264,9 @@ class RankedModel(models.Model):
 
         last_object = cls.get_last_object(with_respect_to_kwargs=with_respect_to_kwargs)
         return last_object.rank if last_object else None
+
+    def schedule_rebalancing(self):
+        ScheduledRebalancing.objects.update_or_create(
+            model=self._meta.model_name,
+            with_respect_to=self._with_respect_to_value,
+        )

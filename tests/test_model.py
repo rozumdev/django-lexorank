@@ -225,3 +225,70 @@ def test_rebalancing_required_return_false_for_any_object_when_rank_length_is_no
     with mock.patch.object(LexoRank, "rebalancing_length", rebalancing_length):
         for board in boards:
             assert not board.rebalancing_required()
+
+
+def test_rebalancing_scheduled_return_false_if_no_rebalancing_were_scheduled(
+    task_factory,
+):
+    # given
+    tasks = task_factory.create_batch(10)
+
+    # when
+    for task in tasks:
+        assert not task.rebalancing_scheduled()
+
+
+def test_rebalancing_scheduled_return_false_if_rebalancing_was_scheduled_for_another_group(  # noqa: E501
+    task_factory,
+    board,
+    scheduled_rebalancing_factory,
+):
+    # given
+    tasks_on_board = task_factory.create_batch(3, board=board)
+    another_tasks = task_factory.create_batch(5)
+
+    scheduled_rebalancing_factory.create(
+        with_respect_to=board.pk, model=tasks_on_board[0]._meta.model_name
+    )
+
+    # when
+    for task in tasks_on_board:
+        assert task.rebalancing_scheduled()
+
+    # # when
+    for task in another_tasks:
+        assert not task.rebalancing_scheduled()
+
+
+def test_rebalancing_is_scheduled_for_a_list_if_rank_length_exceeds_the_limit(
+    task_factory, board
+):
+    # given
+    tasks_on_board = task_factory.create_batch(3, board=board)
+    another_tasks = task_factory.create_batch(5)
+
+    # when
+    with mock.patch.object(LexoRank, "rebalancing_length", 1):
+        tasks_on_board[0].place_on_bottom()
+
+    # then
+    for task in tasks_on_board:
+        assert task.rebalancing_scheduled()
+
+    for task in another_tasks:
+        assert not task.rebalancing_scheduled()
+
+
+def test_rebalancing_is_scheduled_for_a_whole_list_if_it_dont_have_respected_object(
+    board_factory,
+):
+    # given
+    boards = board_factory.create_batch(5)
+
+    # when
+    with mock.patch.object(LexoRank, "rebalancing_length", 1):
+        boards[0].place_on_bottom()
+
+    # then
+    for board in boards:
+        assert board.rebalancing_scheduled()

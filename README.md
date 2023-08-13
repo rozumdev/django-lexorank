@@ -1,8 +1,11 @@
 # django-lexorank
 
 [![Test workflow](https://github.com/rozumdev/django-lexorank/actions/workflows/tests.yml/badge.svg)](https://github.com/rozumdev/django-lexorank/actions/workflows/test.yml/)
-[![PyPI version](https://img.shields.io/pypi/v/django-lexorank.svg)](https://pypi.python.org/pypi/django-lexorank/)
-
+[![PyPI version](https://img.shields.io/pypi/v/django-lexorank.svg)](https://pypi.org/project/django-lexorank/)
+[![PyPI downloads](https://img.shields.io/pypi/dm/django-lexorank.svg)](https://pypistats.org/packages/django-lexorank)
+[![License](https://img.shields.io/pypi/l/django-lexorank.svg)](https://en.wikipedia.org/wiki/MIT_License)
+[![Supported Python versions](https://img.shields.io/pypi/pyversions/django-lexorank.svg)](https://pypi.org/project/django-lexorank/)
+[![Code style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 This package implements an algorithm similar to JIRA's lexorank, but without using buckets for rebalancing
 that can be used with Django projects.
@@ -13,6 +16,18 @@ that can be used with Django projects.
 
 ```shell
 pip install django-lexorank
+```
+
+
+## Configuration
+
+Add `django_lexorank` to your `INSTALLED_APPS` setting:
+
+```python
+INSTALLED_APPS = [
+    ...
+    "django_lexorank",
+]
 ```
 
 
@@ -92,13 +107,17 @@ There are 3 ways to insert models using manager methods:
 
 ### Instance methods
 
-`obj.place_after(after_obj)` - places model instance after provided instance
+`obj.place_after(after_obj)` - places model instance after provided instance.
+If rank length exceeds the limit after the move, rebalancing will be scheduled.
 
-`obj.place_before(before_obj)` - places model instance before provided instance
+`obj.place_before(before_obj)` - places model instance before provided instance.
+If rank length exceeds the limit after the move, rebalancing will be scheduled.
 
-`obj.place_on_top()` - moves model instance to the bottom of the list
+`obj.place_on_top()` - moves model instance to the bottom of the list.
+If rank length exceeds the limit after the move, rebalancing will be scheduled.
 
-`obj.place_on_bottom()` - moves model instance to the bottom of the list
+`obj.place_on_bottom()` - moves model instance to the bottom of the list.
+If rank length exceeds the limit after the move, rebalancing will be scheduled.
 
 `obj.get_previous_object()` - return previous object in the list
 
@@ -108,9 +127,14 @@ There are 3 ways to insert models using manager methods:
 
 `obj.get_next_object_rank()` - return next object rank in the list
 
+`obj.schedule_rebalancing()` - schedule rebalancing  for the whole list or a group if `order_with_respect_to` is set
+
 `obj.rebalance()` - rebalance the whole list or a group if `order_with_respect_to` is set
 
 `obj.rebalancing_required()` - returns `True` if rebalancing is required for the whole list,
+or for a group if `order_with_respect_to` is set
+
+`obj.rebalancing_scheduled()` - returns `True` if rebalancing is scheduled for the whole list,
 or for a group if `order_with_respect_to` is set
 
 ### Model methods
@@ -122,3 +146,11 @@ or for a group if `order_with_respect_to` is set
 `model.get_first_object_rank()` - return first object rank in the list
 
 `model.get_last_object_rank()` - return last object rank in the list
+
+
+### Rebalancing Schedule
+
+Each time, a rank length exceeds the limit, rebalancing is scheduled for the whole list or a group,
+according to the value of `order_with_respect_to` parameter.
+
+`SheduledRebalancing` model can be used to create a task for rebalancing ranks.
