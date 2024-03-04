@@ -3,9 +3,7 @@ name = "django-lexorank"
 version = "0.1.3"
 description = "This package implements an algorithm similar to JIRA's lexorank, but without using buckets for rebalancing that can be used with Django projects."
 authors = ["Alex Rozum <rozumalex@gmail.com>"]
-packages = [
-    {include="django_lexorank"}
-]
+packages = [{ include = "django_lexorank" }]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -23,7 +21,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-django = ">=3.2, <5"
+django = ">=3.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest-django = "^4.5.2"
@@ -39,9 +37,7 @@ profile = "black"
 [tool.flake8]
 max-complexity = 15
 max-line-length = 88
-per-file-ignores = [
-    "__init__.py: F401",
-]
+per-file-ignores = ["__init__.py: F401"]
 
 [tool.mypy]
 allow_untyped_globals = true
@@ -53,7 +49,8 @@ testpaths = "tests"
 [tool.tox]
 legacy_tox_ini = """
     [tox]
-    envlist = django{3.2,4.2}-{py38,py39,py310,py311}
+    envlist = django{3.2,4.2}-{py38,py39,py310,py311,py312}
+              django5.0-{py310,py311,py312}
 
     [gh-actions]
     python =
@@ -61,11 +58,13 @@ legacy_tox_ini = """
         3.9: py39
         3.10: py310
         3.11: py311
+        3.12: py312
 
     [testenv]
     deps =
         django3.2: Django>=3.2
         django4.2: Django>=4.2
+        django5.0: Django>=5.0
         pytest
         pytest-django
         factory-boy
