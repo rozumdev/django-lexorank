@@ -48,9 +48,9 @@ class RankedModel(models.Model):
 
     @transaction.atomic
     def save(self, *args, **kwargs) -> None:
-        if self.order_with_respect_to:
-            if self.field_value_has_changed(self.order_with_respect_to):
-                self.rank = None  # type: ignore[assignment]
+        # if self.order_with_respect_to:
+        #     if self.field_value_has_changed(self.order_with_respect_to):
+        #         self.rank = None  # type: ignore[assignment]
 
         super().save(*args, **kwargs)
 
