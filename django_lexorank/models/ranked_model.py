@@ -55,7 +55,8 @@ class RankedModel(models.Model):
         super().save(*args, **kwargs)
 
         if self.rebalancing_required():
-            self.schedule_rebalancing()
+            # self.schedule_rebalancing()
+            self.rebalance()
 
     @cached_property
     def _model(self) -> Type[models.Model]:
