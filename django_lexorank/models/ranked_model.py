@@ -41,10 +41,13 @@ class RankedModel(models.Model):
         if not self.pk or not self.__initial_values:
             return False
 
-        if getattr(self, field) != self.__initial_values[field]:
-            return True
+        current_value = getattr(self, field)
+        initial_value = self.__initial_values[field]
 
-        return False
+        if isinstance(current_value, models.Model):
+            return current_value.pk != initial_value
+
+        return current_value != initial_value
 
     @transaction.atomic
     def save(self, *args, **kwargs) -> None:
