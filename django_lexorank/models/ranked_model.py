@@ -45,7 +45,7 @@ class RankedModel(models.Model):
         initial_value = self.__initial_values[field]
 
         if isinstance(current_value, models.Model):
-            return current_value.pk != initial_value
+            current_value = current_value.pk
 
         return current_value != initial_value
 
