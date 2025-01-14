@@ -292,3 +292,32 @@ def test_rebalancing_is_scheduled_for_a_whole_list_if_it_dont_have_respected_obj
     # then
     for board in boards:
         assert board.rebalancing_scheduled()
+
+
+def test_field_value_has_changed_method_with_no_changes(board):
+    # then
+    assert not board.field_value_has_changed("name")
+
+
+def test_field_value_has_changed_method(board):
+    # when
+    board.name = "new name"
+
+    # then
+    assert board.field_value_has_changed("name")
+
+
+def test_field_value_has_changed_method_foreign_key_no_changes(task, board_factory):
+    # then
+    assert not task.field_value_has_changed("board")
+
+
+def test_field_value_has_changed_method_foreign_key(task, board_factory):
+    # given
+    new_board = board_factory.create()
+
+    # when
+    task.board = new_board
+
+    # then
+    assert task.field_value_has_changed("board")
